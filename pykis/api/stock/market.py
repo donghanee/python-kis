@@ -16,6 +16,7 @@ __all__ = [
 
 MARKET_TYPE = Literal[
     "KRX",
+    "NXT",
     "NASDAQ",
     "NYSE",
     "AMEX",
@@ -50,7 +51,8 @@ MARKET_CODE_MAP: dict[MARKET_TYPE, str] = {
     "SZSE": "SZAA",
 }
 
-REVERSE_MARKET_CODE_MAP: dict[str, MARKET_TYPE] = {value: key for key, value in MARKET_CODE_MAP.items()}
+REVERSE_MARKET_CODE_MAP: dict[str, MARKET_TYPE] = {
+    value: key for key, value in MARKET_CODE_MAP.items()}
 
 
 def get_market_code(market: MARKET_TYPE) -> str:
@@ -98,6 +100,7 @@ REVERSE_DAYTIME_MARKET_SHORT_TYPE_MAP: dict[str, MARKET_TYPE] = {
 MARKET_TYPE_KOR_MAP: dict[MARKET_TYPE | None, str] = {
     None: "전체",
     "KRX": "국내",
+    "NXT": "국내(NXT)",
     "NASDAQ": "나스닥",
     "NYSE": "뉴욕",
     "AMEX": "아멕스",
@@ -117,6 +120,7 @@ def get_market_name(market: MARKET_TYPE | None) -> str:
 
 MARKET_CURRENCY_MAP: dict[MARKET_TYPE, CURRENCY_TYPE] = {
     "KRX": "KRW",
+    "NXT": "KRW",
     "NASDAQ": "USD",
     "NYSE": "USD",
     "AMEX": "USD",
@@ -136,6 +140,7 @@ def get_market_currency(market: MARKET_TYPE) -> CURRENCY_TYPE:
 
 MARKET_TIMEZONE_MAP = {
     "KRX": "Asia/Seoul",
+    "NXT": "Asia/Seoul",
     "NASDAQ": "America/New_York",
     "NYSE": "America/New_York",
     "AMEX": "America/New_York",
@@ -147,7 +152,8 @@ MARKET_TIMEZONE_MAP = {
     "SZSE": "Asia/Shanghai",
 }
 
-MARKET_TIMEZONE_OBJECT_MAP = {key: ZoneInfo(value) for key, value in MARKET_TIMEZONE_MAP.items()}
+MARKET_TIMEZONE_OBJECT_MAP = {key: ZoneInfo(
+    value) for key, value in MARKET_TIMEZONE_MAP.items()}
 
 
 def get_market_timezone(market: MARKET_TYPE) -> ZoneInfo:
