@@ -277,7 +277,8 @@ def order_condition(
     if price and price <= 0:
         raise ValueError("가격은 0보다 커야합니다.")
 
-    order_condition = [not virtual, market, order, price is not None, condition, execution]
+    order_condition = [not virtual, market, order,
+                       price is not None, condition, execution]
 
     if tuple(order_condition) not in ORDER_CONDITION_MAP:
         # 조건을 찾을 수 없을 경우, 투자구분을 기본값으로 변환
@@ -571,7 +572,8 @@ class KisOrderBase(KisOrderNumberBase, KisOrderableOrderMixin, KisRealtimeOrdera
     def __init__(self): ...
 
     @overload
-    def __init__(self, account_number: KisAccountNumber, symbol: str, market: "MARKET_TYPE"): ...
+    def __init__(self, account_number: KisAccountNumber,
+                 symbol: str, market: "MARKET_TYPE"): ...
 
     @overload
     def __init__(
@@ -1070,9 +1072,22 @@ def domestic_order(
 
     price = None if price is None else ensure_price(price, 0)
 
+    market = "KRX"
+    cur_time = datetime.now().time()
+
+    start_time = datetime.strptime("15:40", "%H:%M").time()
+    end_time = datetime.strptime("20:00", "%H:%M").time()
+
+    if start_time <= cur_time <= end_time:
+        market = 'NXT'
+    start_time = datetime.strptime("08:00", "%H:%M").time()
+    end_time = datetime.strptime("09:00", "%H:%M").time()
+    if start_time <= cur_time < end_time:
+        market = 'NXT'
+
     condition_code, price_setting, _ = order_condition(
         virtual=self.virtual,
-        market="KRX",
+        market=market,
         order=order,
         price=price,
         condition=condition,
@@ -1085,7 +1100,7 @@ def domestic_order(
     if price_setting:
         price = _get_order_price(
             self,
-            market="KRX",
+            market=market,
             symbol=symbol,
             price_setting=price_setting,
         )
@@ -1094,7 +1109,7 @@ def domestic_order(
         qty, _ = _orderable_quantity(
             self,
             account=account,
-            market="KRX",
+            market=market,
             symbol=symbol,
             order=order,
             price=None if price_setting else price,
@@ -1111,12 +1126,13 @@ def domestic_order(
             "ORD_DVSN": condition_code,
             "ORD_QTY": str(int(qty)),
             "ORD_UNPR": str(price or 0),
+            "EXCG_ID_DVSN_CD": market,
         },
         form=[account],
         response_type=KisDomesticOrder(
             account_number=account,
             symbol=symbol,
-            market="KRX",
+            market=market,
         ),
         method="POST",
     )
@@ -1485,7 +1501,7 @@ def order(
         KisMarketNotOpenedError: 시장이 열리지 않은 경우
         ValueError: 종목 코드가 올바르지 않은 경우
     """
-    if market == "KRX":
+    if market == "KRX" or market == "NXT":
         return domestic_order(
             self,
             account=account,

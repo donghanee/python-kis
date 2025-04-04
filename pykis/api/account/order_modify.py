@@ -155,7 +155,7 @@ def domestic_modify_order(
 
     condition_code, price_setting, _ = order_condition(
         virtual=self.virtual,
-        market="KRX",
+        market=order.market,
         order=order_info.type,
         price=price,
         condition=condition,
@@ -177,12 +177,13 @@ def domestic_modify_order(
             "ORD_QTY": str(int(qty or 0)),
             "ORD_UNPR": str(price or 0),
             "QTY_ALL_ORD_YN": "N" if qty else "Y",
+            "EXCG_ID_DVSN_CD": order.market,
         },
         form=[order.account_number],
         response_type=KisDomesticModifyOrder(
             account_number=order.account_number,
             symbol=order.symbol,
-            market="KRX",
+            market=order.market,
         ),
         method="POST",
     )
@@ -321,7 +322,8 @@ def foreign_modify_order(
     if qty is None:
         qty = order_info.qty
 
-    api = FOREIGN_ORDER_MODIFY_API_CODES.get((not self.virtual, order.market, "modify"))
+    api = FOREIGN_ORDER_MODIFY_API_CODES.get(
+        (not self.virtual, order.market, "modify"))
 
     if not api:
         raise ValueError("해당 시장은 정정 주문을 지원하지 않습니다.")
@@ -360,7 +362,8 @@ def foreign_cancel_order(
     Args:
         order (KisOrderNumber): 주문번호
     """
-    api = FOREIGN_ORDER_MODIFY_API_CODES.get((not self.virtual, order.market, "cancel"))
+    api = FOREIGN_ORDER_MODIFY_API_CODES.get(
+        (not self.virtual, order.market, "cancel"))
 
     if not api:
         raise ValueError("해당 시장은 취소 주문을 지원하지 않습니다.")
@@ -437,7 +440,8 @@ def foreign_daytime_modify_order(
         qty = order_info.qty
 
     if not price:
-        quote_data = quote(self, symbol=order.symbol, market=order.market, extended=True)
+        quote_data = quote(self, symbol=order.symbol,
+                           market=order.market, extended=True)
         price = quote_data.high_limit if order == "buy" else quote_data.low_limit
 
     return self.fetch(
@@ -540,7 +544,7 @@ def modify_order(
         condition (ORDER_CONDITION, optional): 주문조건
         execution (ORDER_EXECUTION_CONDITION, optional): 체결조건
     """
-    if order.market == "KRX":
+    if order.market == "KRX" or order.market == "NXT":
         return domestic_modify_order(
             self,
             order=order,
